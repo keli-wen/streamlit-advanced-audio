@@ -1,0 +1,3 @@
+include README_PYPI.md
+include LICENSE
+recursive-include streamlit_advanced_audio/frontend/build *
