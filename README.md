@@ -1,4 +1,4 @@
-# Streamlit Advanced Audio
+# 🎵 Streamlit Advanced Audio
 
 ![image](./assets/demo.gif)
 
@@ -25,7 +25,7 @@ The `audix` component, built with `react`, `wavesurfer.js`, and `ant design`, of
   - Cursor styling
 - [x] Audio region selection support for quick interval selection and timing
 
-Current limitations:
+❌ Current limitations:
 
 - [ ] Basic URL handling (downloads to local before playback)
 - [ ] Experimental trimming feature (requires Python-side processing based on return values)

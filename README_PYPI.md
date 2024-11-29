@@ -1,4 +1,4 @@
-# Streamlit Advanced Audio - EN
+# 🎵 Streamlit Advanced Audio - EN
 
 ## Features
 
@@ -117,7 +117,7 @@ This project builds upon several excellent open-source solutions:
 - [wavesurfer Region Plugin](https://wavesurfer.xyz/plugins/regions) for region selection and trimming
 - [Ant Design](https://ant.design/) for UI components and dark mode support
 
-# Streamlit Advanced Audio - CN
+# 🎵 Streamlit Advanced Audio - CN
 
 ## 功能与特性
 

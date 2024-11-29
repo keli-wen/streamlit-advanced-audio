@@ -1,4 +1,4 @@
-# Streamlit Advanced Audio
+# 🎵 Streamlit Advanced Audio
 
 ![image](./assets/demo.gif)
 
@@ -22,7 +22,7 @@
   - 光标样式
 - [x] 支持了音频区间的设定，可以快速获取音频的区间起始时间。
   
-目前可能存在的不足之处：
+❌ 目前可能存在的不足之处：
 
 - [ ] 对于 url 的处理比较粗糙，会先下载到本地再播放。
 - [ ] 裁剪功能仅停留在实验阶段，需要在 python 端基于返回值进行裁剪。
