@@ -8,7 +8,7 @@
 
 原始 streamlit 中的 `audio` 组件提供了基本的音频播放功能，但是缺乏一些高级的特性，比如缺乏样式定制，无法获取当前播放的时间等。
 
-`audix` 组件基于 `react`，`wavesurfer.js` 和 `ant design` 开发，提供了如下的功能：
+`audix` (`audix` 是 `audio` + `extra` 的缩写) 组件基于 `react`，`wavesurfer.js` 和 `ant design` 开发，提供了如下的功能：
 
 - [x] 基本完全兼容了原始 `streamlit.audio` 组件的 API。
 - [x] 支持获取当前播放的时间，用于快捷的实现音频切分裁剪等功能。

@@ -10,6 +10,9 @@ While the original `audio` component in Streamlit provides basic audio playback 
 
 The `audix` component, built with `react`, `wavesurfer.js`, and `ant design`, offers the following features:
 
+> [!NOTE]
+> `audix` means `audio` + `extra`
+
 - [x] Full compatibility with the original `streamlit.audio` component API
 - [x] Real-time playback information tracking for audio editing and trimming
   - Current playback time (`currentTime`)
@@ -113,6 +116,18 @@ audix(
 This project is based on the [Streamlit Component Templates](https://github.com/streamlit/component-template).
 
 For development details, please refer to the [Quickstart](https://github.com/streamlit/component-template?tab=readme-ov-file#quickstart) section.
+
+> [!IMPORTANT]
+> You can use the following command to build and **lint** the project:
+> 
+> ```bash
+> cd streamlit-advanced-audio/frontend
+> npm install
+> npm run build
+> cd ../../
+> bash lint.sh # **For** py and tsx code lint.
+> ```
+>
 
 Pull requests for further improvements are welcome!
 
