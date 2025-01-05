@@ -54,11 +54,11 @@ The `audix` component, built with `react`, `wavesurfer.js`, and `ant design`, of
 
 Refer to: [advanced-audio-example.streamlit.app](https://advanced-audio-example.streamlit.app/)
 
-<img src="./assets/image.png" width="400"/>
+<img src="./assets/image.png" width="500"/>
 
-<img src="./assets/image-region.png" width="400"/>
+<img src="./assets/image-region.png" width="500"/>
 
-<img src="./assets/customization-regions.png" width="400"/>
+<img src="./assets/customization-regions.png" width="500"/>
 
 ## Installation
 

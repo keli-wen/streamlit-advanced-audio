@@ -47,6 +47,16 @@
 - [ ] 对于 url 的处理比较粗糙，会先下载到本地再播放。
 - [ ] 裁剪功能仅停留在实验阶段，需要在 python 端基于返回值进行裁剪。
 
+## 更多 DEMO
+
+可参考: [advanced-audio-example.streamlit.app](https://advanced-audio-example.streamlit.app/)
+
+<img src="./assets/image.png" width="500"/>
+
+<img src="./assets/image-region.png" width="500"/>
+
+<img src="./assets/customization-regions.png" width="500"/>
+
 ## 安装与使用
 
 从本地安装：
