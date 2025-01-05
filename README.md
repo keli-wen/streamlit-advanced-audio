@@ -134,7 +134,7 @@ region_colors = RegionColorOptions(
     start_to_end_mask_region_color="rgba(160, 211, 251, 0.3)" # Start time to end time mask color
 )
 
-# 添加自定义只读区域
+# Add custom regions (read-only)
 custom_regions = [
     CustomizedRegion(start=6, end=6.5, color="#00b89466"),     # Use hex color (with transparency)
     CustomizedRegion(start=7, end=8, color="rgba(255, 255, 255, 0.6)") # Use RGBA color

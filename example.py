@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 import streamlit as st
 
 from streamlit_advanced_audio import (
@@ -14,7 +15,6 @@ st.title("Advanced Audio Player Demo (audix vs st.audio)")
 
 # Display feature comparison
 st.header("Feature Comparison")
-import pandas as pd
 
 st.dataframe(
     pd.DataFrame(
