@@ -6,7 +6,7 @@
 ![Ant-Design](https://img.shields.io/badge/-AntDesign-%230170FE?style=for-the-badge&logo=ant-design&logoColor=white)
 
 [![Generic badge](https://img.shields.io/badge/PyPI-pip_install_streamlit--advanced--audio-blue?style=for-the-badge&logo=python)](https://pypi.org/project/streamlit-advanced-audio/)
-[![Generic badge](https://img.shields.io/badge/Package-v0.1.0-black?style=for-the-badge)](https://pypi.org/project/streamlit-advanced-audio/)
+[![Generic badge](https://img.shields.io/badge/Package-v0.1.1-black?style=for-the-badge)](https://pypi.org/project/streamlit-advanced-audio/)
 
 ![image](./assets/demo.gif)
 
