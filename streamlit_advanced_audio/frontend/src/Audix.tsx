@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   Button,
   Select,
@@ -37,6 +38,13 @@ interface State {
   hasModifications: boolean;
 }
 
+interface RegionData {
+  start: number;
+  end: number;
+  readonly?: boolean;
+  color?: string;
+}
+
 class AudioPlayer extends StreamlitComponentBase<State> {
   private isDarkMode = false;
   private wavesurfer: WaveSurfer | null = null;
@@ -64,6 +72,64 @@ class AudioPlayer extends StreamlitComponentBase<State> {
       this.wavesurfer.destroy();
     }
   }
+
+  /**
+   * Clear read-only regions on the waveform.
+   * Removes all regions that are marked as read-only.
+   *
+   * @returns void
+   */
+  private clearReadOnlyRegions = () => {
+    if (this.regionsPlugin) {
+      const regions = this.regionsPlugin.getRegions();
+      regions.forEach((region) => {
+        const readOnly = region.id.includes('readonly');
+        if (readOnly) {
+          region.remove();
+        }
+      });
+    }
+  };
+
+  /**
+   * Clear non-read-only regions on the waveform.
+   * Removes all regions that are not marked as read-only.
+   *
+   * @returns void
+   */
+  private clearNonReadOnlyRegions = () => {
+    if (this.regionsPlugin) {
+      const regions = this.regionsPlugin.getRegions();
+      regions.forEach((region) => {
+        const readOnly = region.id.includes('readonly');
+        if (!readOnly) {
+          region.remove();
+        }
+      });
+    }
+  };
+
+  /**
+   * Initialize read-only regions on the waveform.
+   * Creates non-draggable, non-resizable regions based on the provided region data.
+   *
+   * @param regions - Array of RegionData objects containing start time, end time and color
+   * @returns void
+   */
+  private initializeReadOnlyRegions = (regions: RegionData[]) => {
+    if (this.regionsPlugin) {
+      regions.forEach((region) => {
+        this.regionsPlugin?.addRegion({
+          start: region.start,
+          end: region.end,
+          color: region.color || 'rgba(160, 211, 251, 0.4)', // Default gray color
+          drag: false,
+          resize: false,
+          id: `readonly-${Date.now()}-${Math.random()}`,
+        });
+      });
+    }
+  };
 
   private initWavesurfer = () => {
     if (!this.containerRef.current) {
@@ -137,14 +203,45 @@ class AudioPlayer extends StreamlitComponentBase<State> {
           this.wavesurfer!.setTime(this.props.args.start_time);
         }
 
+        // Add mask region if mask_start_to_end is true.
+        if (
+          this.props.args.mask_start_to_end &&
+          (this.props.args.start_time != 0 || this.props.args.end_time) &&
+          this.regionsPlugin &&
+          this.wavesurfer
+        ) {
+          const start = this.props.args.start_time || 0;
+          const end =
+            this.props.args.end_time || this.wavesurfer!.getDuration();
+          this.regionsPlugin.addRegion({
+            start: start,
+            end: end,
+            color:
+              this.props.args.region_color_options
+                .start_to_end_mask_region_color,
+            drag: false,
+            resize: false,
+            id: `readonly-${Date.now()}-${Math.random()}`,
+          });
+        }
+
+        if (this.props.args.customized_regions) {
+          this.initializeReadOnlyRegions(this.props.args.customized_regions);
+        }
+
         if (this.props.args.end_time !== null) {
           this.wavesurfer!.on('audioprocess', () => {
             const currentTime = this.wavesurfer!.getCurrentTime();
             if (currentTime >= this.props.args.end_time!) {
               this.wavesurfer!.pause();
+              // ! Don't forget to update the state.
+              this.setState({ isPlaying: false });
+              // * I think set time to start time will be better.
+              this.wavesurfer!.setTime(this.props.args.start_time || 0);
               if (this.props.args.loop) {
-                this.wavesurfer!.setTime(this.props.args.start_time);
                 this.wavesurfer!.play();
+                // ! Don't forget to update the state.
+                this.setState({ isPlaying: true });
               }
             }
           });
@@ -181,6 +278,12 @@ class AudioPlayer extends StreamlitComponentBase<State> {
               this.setState({ isPlaying: false });
             }
           }
+        } else {
+          const currentTime = this.wavesurfer!.getCurrentTime();
+          const start_time = this.props.args.start_time || 0;
+          if (currentTime < start_time) {
+            this.wavesurfer!.setTime(start_time);
+          }
         }
       });
 
@@ -190,6 +293,7 @@ class AudioPlayer extends StreamlitComponentBase<State> {
         Streamlit.setComponentValue({
           currentTime: this.wavesurfer!.getCurrentTime(),
           selectedRegion: this.state.selectedRegion,
+          isPlaying: this.state.isPlaying,
         });
       });
     });
@@ -216,11 +320,19 @@ class AudioPlayer extends StreamlitComponentBase<State> {
         // Normal play/pause behavior.
         this.wavesurfer.playPause();
       }
-      this.setState((prevState) => ({ isPlaying: !prevState.isPlaying }));
-      Streamlit.setComponentValue({
-        currentTime: this.wavesurfer!.getCurrentTime(),
-        selectedRegion: this.state.selectedRegion,
-      });
+
+      // ! The state update in react is async, so we need to use
+      // ! the callback function to update the component value.
+      this.setState(
+        (prevState) => ({ isPlaying: !prevState.isPlaying }),
+        () => {
+          Streamlit.setComponentValue({
+            currentTime: this.wavesurfer!.getCurrentTime(),
+            selectedRegion: this.state.selectedRegion,
+            isPlaying: this.state.isPlaying,
+          });
+        }
+      );
     }
   };
 
@@ -244,7 +356,7 @@ class AudioPlayer extends StreamlitComponentBase<State> {
   private handleCreateRegion = () => {
     if (this.wavesurfer && this.regionsPlugin) {
       // Clear existing regions.
-      this.regionsPlugin.clearRegions();
+      this.clearNonReadOnlyRegions();
 
       const currentTime = this.wavesurfer.getCurrentTime();
       const duration = this.wavesurfer.getDuration();
@@ -258,9 +370,10 @@ class AudioPlayer extends StreamlitComponentBase<State> {
       const region = this.regionsPlugin.addRegion({
         start: validStart,
         end: regionEnd,
-        color: 'rgba(160, 211, 251, 0.4)',
+        color: this.props.args.region_color_options.interactive_region_color,
         drag: true,
         resize: true,
+        id: `interactive-${Date.now()}-${Math.random()}`,
       });
 
       // Limit the drag and resize range.
@@ -306,13 +419,14 @@ class AudioPlayer extends StreamlitComponentBase<State> {
       Streamlit.setComponentValue({
         currentTime: this.wavesurfer!.getCurrentTime(),
         selectedRegion: this.state.selectedRegion,
+        isPlaying: this.state.isPlaying,
       });
     }
   };
 
   private handleResetAudio = () => {
     if (this.wavesurfer) {
-      this.regionsPlugin?.clearRegions();
+      this.clearNonReadOnlyRegions();
       this.setState({
         selectedRegion: null,
         showRegionControls: false,
@@ -321,6 +435,7 @@ class AudioPlayer extends StreamlitComponentBase<State> {
       Streamlit.setComponentValue({
         currentTime: this.wavesurfer!.getCurrentTime(),
         selectedRegion: this.state.selectedRegion,
+        isPlaying: this.state.isPlaying,
       });
     }
   };
@@ -339,7 +454,7 @@ class AudioPlayer extends StreamlitComponentBase<State> {
         <Button
           icon={<CloseOutlined />}
           onClick={() => {
-            this.regionsPlugin?.clearRegions();
+            this.clearNonReadOnlyRegions();
             this.setState({
               selectedRegion: null,
               showRegionControls: false,

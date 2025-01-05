@@ -16,6 +16,16 @@
 
 While the original `audio` component in Streamlit provides basic audio playback functionality, it lacks advanced features such as style customization and current playback time tracking.
 
+| Feature | audix | st.audio |
+|---------|-------|-----------|
+| Waveform Visualization | ✅ | ❌ |
+| Custom Time Region | ✅ | ❌ |
+| Playback Status | ✅ | ❌ |
+| Custom Appearance | ✅ | ❌ |
+| Multiple Format Support | ✅ | ✅ |
+| URL Support | ✅ | ✅ |
+| File Upload | ✅ | ✅ |
+
 The `audix` component, built with `react`, `wavesurfer.js`, and `ant design`, offers the following features:
 
 > [!NOTE]
@@ -32,6 +42,8 @@ The `audix` component, built with `react`, `wavesurfer.js`, and `ant design`, of
   - Bar width and spacing
   - Cursor styling
 - [x] Audio region selection support for quick interval selection and timing
+- [x] Support for custom regions style
+- [x] Support for custom regions add
 
 ❌ Current limitations:
 
@@ -43,6 +55,8 @@ The `audix` component, built with `react`, `wavesurfer.js`, and `ant design`, of
 ![image](./assets/image.png)
 
 ![image](./assets/image-region.png)
+
+![image](./assets/customization-regions.png)
 
 ## Installation
 
@@ -80,7 +94,7 @@ audio_array = np.sin(2 * np.pi * 440 * np.linspace(0, 1, sample_rate))
 audix(audio_array, sample_rate=sample_rate)
 ```
 
-2. Custom waveform styling:
+2. Custom waveform styling and playback status get:
 
 ```python
 from streamlit_advanced_audio import audix, WaveSurferOptions
@@ -102,12 +116,41 @@ result = audix(
 if result:
     current_time = result["currentTime"]
     selected_region = result["selectedRegion"]
+    is_playing = result["isPlaying"]
     st.write(f"Current Time: {current_time}s")
+    st.write(f"Is Playing: {is_playing}")
     if selected_region:
         st.write(f"Selected Region: {selected_region['start']} - {selected_region['end']}s")
 ```
 
-3. Set playback interval and looping:
+3. Add custom regions and customize regions style:
+
+```python
+from streamlit_advanced_audio import audix, CustomizedRegion, RegionColorOptions
+
+# Customize regions style
+region_colors = RegionColorOptions(
+    interactive_region_color="rgba(160, 211, 251, 0.4)",      # Interactive region color
+    start_to_end_mask_region_color="rgba(160, 211, 251, 0.3)" # Start time to end time mask color
+)
+
+# 添加自定义只读区域
+custom_regions = [
+    CustomizedRegion(start=6, end=6.5, color="#00b89466"),     # Use hex color (with transparency)
+    CustomizedRegion(start=7, end=8, color="rgba(255, 255, 255, 0.6)") # Use RGBA color
+]
+
+result = audix(
+    "audio.wav",
+    start_time=0.5,
+    end_time=5.5,
+    mask_start_to_end=True,                    # Show start_time to end_time mask
+    region_color_options=region_colors,        # Set region color
+    customized_regions=custom_regions          # Add custom read-only region
+)
+```
+
+4. Set playback interval and looping:
 
 ```python
 audix(
@@ -125,9 +168,42 @@ This project is based on the [Streamlit Component Templates](https://github.com/
 
 For development details, please refer to the [Quickstart](https://github.com/streamlit/component-template?tab=readme-ov-file#quickstart) section.
 
+Here is the development guide:
+
+- Ensure you have Python 3.6+, Node.js, and npm installed.
+- Clone this project.
+- Create a new Python virtual environment:
+
+```bash
+cd streamlit-advanced-audio
+python -m venv venv
+source venv/bin/activate
+pip install streamlit # Install streamlit
+```
+
+- Initialize and run the frontend component template:
+
+```bash
+cd streamlit-advanced-audio/frontend
+npm install    # Install npm dependencies
+npm run start  # Start Webpack development server
+```
+
+- From another terminal, run the component's Streamlit app (**in development**, set `__init__.py`中的 `_RELEASE` to `False`):
+
+```bash
+cd streamlit-advanced-audio
+. venv/bin/activate  # Activate your previously created virtual environment
+pip install -e . # Install the component package
+streamlit run example.py  # Run the component
+```
+
+- Modify the frontend code: `streamlit-advanced-audio/frontend/src/`
+- Modify the backend code: `streamlit-advanced-audio/__init__.py`
+
 > [!IMPORTANT]
 > You can use the following command to build and **lint** the project:
-> 
+>
 > ```bash
 > cd streamlit-advanced-audio/frontend
 > npm install

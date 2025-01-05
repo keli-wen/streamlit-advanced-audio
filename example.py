@@ -3,9 +3,38 @@ import os
 import numpy as np
 import streamlit as st
 
-from streamlit_advanced_audio import WaveSurferOptions, audix
+from streamlit_advanced_audio import (
+    CustomizedRegion,
+    RegionColorOptions,
+    WaveSurferOptions,
+    audix,
+)
 
 st.title("Advanced Audio Player Demo (audix vs st.audio)")
+
+# Display feature comparison
+st.header("Feature Comparison")
+import pandas as pd
+
+st.dataframe(
+    pd.DataFrame(
+        {
+            "Feature": [
+                "Waveform Visualization",
+                "Custom Time Range",
+                "Playback Status",
+                "Custom Appearance",
+                "Multiple Format Support",
+                "URL Support",
+                "File Upload",
+            ],
+            "audix": ["✅", "✅", "✅", "✅", "✅", "✅", "✅"],
+            "st.audio": ["❌", "❌", "❌", "❌", "✅", "✅", "✅"],
+        }
+    ),
+    use_container_width=True,
+    hide_index=True,
+)
 
 # 1. Local File Playback.
 st.header("1. Local File Playback")
@@ -160,36 +189,120 @@ with col8:
     st.subheader("st.audio player")
     st.audio(url)
 
-# Display feature comparison
-st.header("Feature Comparison")
-st.markdown("""
-| Feature | audix | st.audio |
-|---------|-------|-----------|
-| Waveform Visualization | ✅ | ❌ |
-| Custom Time Range | ✅ | ❌ |
-| Playback Status | ✅ | ❌ |
-| Custom Appearance | ✅ | ❌ |
-| Multiple Format Support | ✅ | ✅ |
-| URL Support | ✅ | ✅ |
-| File Upload | ✅ | ✅ |
+# 5. Region customization
+st.header("5. Region customization")
+result5 = audix(
+    audio_array,
+    start_time=0.5,
+    end_time=5.5,
+    mask_start_to_end=True,
+    wavesurfer_options=WaveSurferOptions(wave_color="#d17d5d", height=60),
+    region_color_options=RegionColorOptions(
+        start_to_end_mask_region_color="rgba(160, 211, 251, 0.3)",
+    ),
+    customized_regions=[
+        CustomizedRegion(start=6, end=6.5, color="#00b89466"),
+        CustomizedRegion(start=7, end=8, color="rgba(255, 255, 255, 0.6)"),
+    ],
+)
+
+if result5:
+    st.write("Playback Info:", result5)
+
+st.code("""
+result5 = audix(
+    audio_array,
+    start_time=0.5,
+    end_time=5.5,
+    mask_start_to_end=True,
+    wavesurfer_options=WaveSurferOptions(
+        wave_color="#d17d5d",
+        height=60,
+    ),
+    region_color_options=RegionColorOptions(
+        start_to_end_mask_region_color="rgba(160, 211, 251, 0.3)",
+    ),
+    customized_regions=[
+        CustomizedRegion(start=6, end=6.5, color="#00b89466"),
+        CustomizedRegion(start=7, end=8, color="rgba(255, 255, 255, 0.6)"),
+    ],
+)
 """)
+
 
 # Add some helpful documentation
 st.header("Documentation")
 with st.expander("Show WaveSurfer Options Documentation"):
     st.code("""
-# Available WaveSurfer Options:
-options = WaveSurferOptions(
-    wave_color="rgb(200, 200, 200)",    # Waveform color
-    progress_color="rgb(100, 100, 100)", # Progress color
-    height=60,                           # Height in pixels
-    bar_width=3,                         # Width of bars
-    bar_gap=1,                           # Gap between bars
-    bar_radius=2,                        # Bar corner radius
-    bar_height=1.0,                      # Vertical scaling
-    cursor_color="#333",                 # Playback cursor color
-    cursor_width=2,                      # Cursor width
-    hide_scrollbar=False,                # Hide scrollbar
-    normalize=True                       # Normalize waveform
-)
+@dataclass
+class WaveSurferOptions:
+    \"\"\"WaveSurfer visualization options.
+
+    All parameters are optional and will use WaveSurfer's defaults if not specified.
+
+    Attributes:
+        wave_color (str): The color of the waveform.
+            (e.g., "#999", "rgb(200, 200, 200)")
+        progress_color (str): The color of the progress mask.
+            (e.g., "#555", "rgb(100, 100, 100)")
+        height (Union[int, str]): The height of the waveform in pixels,
+            or "auto" to fill container.
+        bar_width (int): Width of the bars in pixels when using bar visualization.
+        bar_gap (int): Gap between bars in pixels.
+        bar_radius (int): Rounded borders radius for bars.
+        bar_height (float): Vertical scaling factor for the waveform.
+        cursor_color (str): The color of the playback cursor.
+            (e.g., "#333", "rgb(50, 50, 50)")
+        cursor_width (int): Width of the playback cursor in pixels.
+        hide_scrollbar (bool): Whether to hide the horizontal scrollbar.
+        normalize (bool): Stretch the waveform to the full height.
+    \"\"\"
+
+    wave_color: str = "rgb(200, 200, 200)"
+    progress_color: str = "rgb(100, 100, 100)"
+    height: Union[int, str] = 60
+    bar_width: int = 3
+    bar_gap: int = 1
+    bar_radius: int = 2
+    bar_height: float = 1.0
+    cursor_color: str = "#333"
+    cursor_width: int = 2
+    hide_scrollbar: bool = False
+    normalize: bool = True
+    """)
+
+
+with st.expander("Show Region Color Options Documentation"):
+    st.code("""
+@dataclass
+class RegionColorOptions:
+    \"\"\"Region color options.
+
+    Attributes:
+        interactive_region_color (str): The color of the interactive region.
+            **interactive** means the region add by button.
+        start_to_end_mask_region_color (str): The color of the start to end
+            mask region.
+    \"\"\"
+
+    interactive_region_color: str = "rgba(160, 211, 251, 0.4)"
+    start_to_end_mask_region_color: str = "rgba(160, 211, 251, 0.4)"
+
+    """)
+
+with st.expander("Show Customized Region Documentation"):
+    st.code("""
+@dataclass
+class CustomizedRegion:
+    \"\"\"Customized region.
+
+    Attributes:
+        start (float): The start time of the region.
+        end (float): The end time of the region.
+        color (str): The color of the region.
+    \"\"\"
+
+    start: float
+    end: float
+    color: str = "rgba(160, 211, 251, 0.4)"
     """)

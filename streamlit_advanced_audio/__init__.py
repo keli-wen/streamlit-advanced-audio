@@ -3,7 +3,8 @@ import io
 import os
 from dataclasses import asdict, dataclass
 from datetime import timedelta
-from typing import Any, Dict, Optional, Union
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -74,6 +75,44 @@ class WaveSurferOptions:
         }
 
 
+@dataclass
+class RegionColorOptions:
+    """Region color options.
+
+    Attributes:
+        interactive_region_color (str): The color of the interactive region.
+            **interactive** means the region add by button.
+        start_to_end_mask_region_color (str): The color of the start to end
+            mask region.
+    """
+
+    interactive_region_color: str = "rgba(160, 211, 251, 0.4)"
+    start_to_end_mask_region_color: str = "rgba(160, 211, 251, 0.4)"
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert options to a dictionary."""
+        return asdict(self)
+
+
+@dataclass
+class CustomizedRegion:
+    """Customized region.
+
+    Attributes:
+        start (float): The start time of the region.
+        end (float): The end time of the region.
+        color (str): The color of the region.
+    """
+
+    start: float
+    end: float
+    color: str = "rgba(160, 211, 251, 0.4)"
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert options to a dictionary."""
+        return asdict(self)
+
+
 # Create a _RELEASE constant. We'll set this to False while we're developing
 # and True when we're ready to package and distribute our component.
 _RELEASE = True
@@ -100,7 +139,7 @@ def _convert_to_base64(audio_data: Optional[MediaData]) -> Optional[str]:
     ----------
     audio_data : Optional[MediaData]
         Audio data, can be:
-        - File path (str)
+        - File path (str or pathlib.Path)
         - URL (str)
         - Raw audio data (bytes, BytesIO)
         - Numpy array (numpy.ndarray)
@@ -119,8 +158,9 @@ def _convert_to_base64(audio_data: Optional[MediaData]) -> Optional[str]:
     if audio_data is None:
         raise ValueError("Audio data cannot be None")
 
-    if isinstance(audio_data, str):
+    if isinstance(audio_data, (str, Path)):
         # If it's a file path.
+        audio_data = str(audio_data)
         if os.path.exists(audio_data):
             with open(audio_data, "rb") as f:
                 audio_bytes = f.read()
@@ -224,7 +264,10 @@ def audix(
     end_time: Union[int, float, timedelta, str, None] = None,
     loop: bool = False,
     autoplay: bool = False,
+    mask_start_to_end: bool = False,
     wavesurfer_options: WaveSurferOptions = WaveSurferOptions(),
+    region_color_options: RegionColorOptions = RegionColorOptions(),
+    customized_regions: List[CustomizedRegion] = [],
     key: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """Advanced audio player component. `audix` means `audio` + `extra`.
@@ -254,6 +297,15 @@ def audix(
         Whether to loop the audio.
     autoplay : bool
         Whether to autoplay the audio.
+    mask_start_to_end : bool
+        Whether to mask (add a region) the audio between
+            `start_time` and `end_time`.
+    wavesurfer_options : WaveSurferOptions
+        WaveSurfer options to customize the waveform style.
+    region_color_options : RegionColorOptions
+        Region color options to customize the region style.
+    customized_regions : List[CustomizedRegion]
+        Customized regions to add to the waveform.
     key : Optional[str]
         Streamlit component instance key
 
@@ -264,6 +316,7 @@ def audix(
         {
             "currentTime": float,
             "selectedRegion": Optional[dict[str, float]]
+            "isPlaying": bool,
         }
 
     Raises:
@@ -275,7 +328,7 @@ def audix(
     --------
     >>> result = audix(data="path/to/audio.mp3", loop=True, autoplay=True)
     >>> print(result)
-    { "currentTime": 10.0, "selectedRegion": {"start": 10.0, "end": 20.0} }
+    { "currentTime": 10.0, "selectedRegion": {"start": 10.0, "end": 20.0}, "isPlaying": True }
     """
     start_seconds = _parse_time(start_time) or 0
     end_seconds = _parse_time(end_time)
@@ -298,7 +351,12 @@ def audix(
             loop=loop,
             autoplay=autoplay,
             sample_rate=sample_rate,
+            mask_start_to_end=mask_start_to_end,
             wavesurfer_options=wavesurfer_options.to_dict(),
+            region_color_options=region_color_options.to_dict(),
+            customized_regions=[
+                region.to_dict() for region in customized_regions
+            ],
             key=key,
         )
 
