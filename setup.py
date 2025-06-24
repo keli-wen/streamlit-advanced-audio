@@ -7,7 +7,7 @@ long_description = (this_directory / "README_PYPI.md").read_text(encoding="utf-8
 
 setuptools.setup(
     name="streamlit-advanced-audio",
-    version="0.1.1",
+    version="0.1.2",
     author="Keli Wen",
     author_email="pkuwkl@gmail.com",
     description="Advanced audio player component for Streamlit with waveform visualization and region selection",

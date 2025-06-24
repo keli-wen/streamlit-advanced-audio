@@ -132,7 +132,7 @@ else:
 # For same audio data, the conversion function
 # will not be called multiple times.
 @st.cache_data
-def _convert_to_base64(audio_data: Optional[MediaData]) -> Optional[str]:
+def _convert_to_base64(audio_data: Optional[MediaData], sample_rate: Optional[int] = None) -> Optional[str]:
     """Convert different types of audio data to base64 string.
 
     Parameters:
@@ -144,6 +144,8 @@ def _convert_to_base64(audio_data: Optional[MediaData]) -> Optional[str]:
         - Raw audio data (bytes, BytesIO)
         - Numpy array (numpy.ndarray)
         - File object
+    sample_rate : Optional[int]
+        Sample rate when data is a numpy array. Defaults to 16000 if not provided.
 
     Returns:
     -------
@@ -191,7 +193,9 @@ def _convert_to_base64(audio_data: Optional[MediaData]) -> Optional[str]:
     elif isinstance(audio_data, np.ndarray):
         # If it's a numpy array, convert it to WAV format.
         buffer = io.BytesIO()
-        sf.write(buffer, audio_data, samplerate=16000, format="WAV")
+        # Use provided sample_rate or default to 16000
+        sr = sample_rate if sample_rate is not None else 16000
+        sf.write(buffer, audio_data, samplerate=sr, format="WAV")
         buffer.seek(0)
         audio_base64 = base64.b64encode(buffer.read()).decode()
         return f"data:audio/wav;base64,{audio_base64}"
@@ -339,8 +343,8 @@ def audix(
         )
 
     try:
-        # Convert the audio data to base64.
-        audio_url = _convert_to_base64(data)
+        # Convert the audio data to base64, passing sample_rate parameter
+        audio_url = _convert_to_base64(data, sample_rate)
 
         # Pass the configuration to the frontend component.
         component_value = _component_func(
